@@ -4,8 +4,7 @@ classdef ABMTransportWebApp < handle
         RunButton
         RadKMEditField
         RadKMEditFieldLabel
-        GammaSlider
-        GammaSliderLabel
+        FahrradzhlerinderStadtButton
         ShareBikeLabel
         CO2Label
     end
@@ -21,7 +20,7 @@ classdef ABMTransportWebApp < handle
         epsilon = 0.01;
         rev = 0.1;
         rad_km_2023 = 90.4;
-        gamma = 0.5;
+        gamma = 0;
     end
 
     methods
@@ -41,13 +40,14 @@ classdef ABMTransportWebApp < handle
             app.RadKMEditField.Position = [220 200 100 22];
             app.RadKMEditField.Value = 130;
 
-            app.GammaSliderLabel = uilabel(app.UIFigure);
-            app.GammaSliderLabel.Position = [30 160 180 22];
-            app.GammaSliderLabel.Text = 'Gamma (discussion vs observation)';
-            app.GammaSlider = uislider(app.UIFigure);
-            app.GammaSlider.Position = [220 170 150 3];
-            app.GammaSlider.Limits = [0 1];
-            app.GammaSlider.Value = 0;
+            % Create FahrradzhlerinderStadtButton
+            app.FahrradzhlerinderStadtButton = uibutton(app.GridLayout, 'push');
+            app.FahrradzhlerinderStadtButton.ButtonPushedFcn = createCallbackFcn(app, @FahrradzhlerinderStadtButtonPushed, true);
+            app.FahrradzhlerinderStadtButton.BackgroundColor = [1 0.9098 0.3922];
+            app.FahrradzhlerinderStadtButton.FontWeight = 'bold';
+            app.FahrradzhlerinderStadtButton.Layout.Row = 3;
+            app.FahrradzhlerinderStadtButton.Layout.Column = 2;
+            app.FahrradzhlerinderStadtButton.Text = 'Fahrradzähler in der Stadt';
 
             app.RunButton = uibutton(app.UIFigure,'push');
             app.RunButton.Position = [200 120 120 30];
@@ -63,11 +63,22 @@ classdef ABMTransportWebApp < handle
             app.CO2Label.Text = 'Total CO2 (t):';
         end
 
+        % Button pushed function: FahrradzhlerinderStadtButton
+        function FahrradzhlerinderStadtButtonPushed(app, event)
+                app.UIFigure.UserData.mu_v = 0.5;
+                uialert(app.UIFigure, ...
+        'Fahrradzähler in der Stadt aufgestellt (mu_v = 0.5)', ...
+        'Information');
+        end
+
         function runSimulation(app)
             try
                 rad_km_2026 = app.RadKMEditField.Value;
-                mu_adaption = app.GammaSlider.Value;
-                mu_v = 0 + (0.5/10)* mu_adaption;
+            if isfield(app.UIFigure.UserData, 'mu_v')
+                mu_v = app.UIFigure.UserData.mu_v;
+            else
+                mu_v = 0;
+            end
                
 
                 % --- Load calibration data ---
@@ -143,5 +154,6 @@ classdef ABMTransportWebApp < handle
         end
     end
 end
+
 
 
