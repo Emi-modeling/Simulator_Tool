@@ -18,12 +18,10 @@ classdef ABMTransportWebApp < handle
         mo = 10;
         beta = 0.01;
         lambda = 0.1;
-        alpha_base = 0.55;
         epsilon = 0.01;
         rev = 0.1;
-        mu_v = 0;
-        rad_km_2017 = 113.0;
-        rad_km_2023 = 119.4;
+        rad_km_2023 = 90.4;
+        gamma = 0.5;
     end
 
     methods
@@ -68,7 +66,9 @@ classdef ABMTransportWebApp < handle
         function runSimulation(app)
             try
                 rad_km_2026 = app.RadKMEditField.Value;
-                gamma = app.GammaSlider.Value;
+                mu_adaption = app.GammaSlider.Value;
+                mu_v = 0 + (0.5/10)* mu_adaption;
+               
 
                 % --- Load calibration data ---
                 opts = delimitedTextImportOptions("NumVariables",18);
@@ -86,10 +86,8 @@ classdef ABMTransportWebApp < handle
                 PNB=(PNB-1)/5; B=(B-1)/6; NE=(NE-1)/5;
                 data=[B PNB NE]; mu=mean(data); Sigma=cov(data);
 
-                % --- Adjust alpha ---
-                pct_change_rad = (rad_km_2026 - app.rad_km_2023) / app.rad_km_2023;
-                alpha_sensitivity = 0.5;
-                alpha = app.alpha_base * (1 - alpha_sensitivity * pct_change_rad);
+                % --- Set alpha ---
+                alpha = -((rad_km_2026 - 500).^3) / 250000000 + 0.5;
 
                 % --- Initialize ---
                 init=rmvnrnd(mu,Sigma,app.n,[eye(3);-eye(3)],[ones(3,1);zeros(3,1)]);
@@ -103,19 +101,40 @@ classdef ABMTransportWebApp < handle
                 pkm_2023 = struct('walk',4456,'bike',6233,'car',45120,'pp',6769);
                 ef = struct('bike',8,'car',144.2,'pp',90.1,'walk',0);
 
-                delta_bike = pkm_2023.bike * share_bike;
-                new_bike_pkm = pkm_2023.bike + delta_bike;
-                new_car_pkm = max(pkm_2023.car - delta_bike,0);
+                co2_time = zeros(1, T);
+
+                % baseline
+                co2_base = pkm_2023.bike*ef.bike + pkm_2023.car*ef.car + pkm_2023.pp*ef.pp;
+
+                for t = 1:T
+                bike_share_t = sum(x(:,t))/n;
+                new_bike_pkm = pkm_2023.bike * (1 + bike_share_t);
+                delta_bike_t = new_bike_pkm - pkm_2023.bike;
+                new_car_pkm = max(pkm_2023.car - delta_bike_t, 0);
                 new_pp_pkm = pkm_2023.pp;
 
-                co2_bike = new_bike_pkm * ef.bike;
-                co2_car  = new_car_pkm * ef.car;
-                co2_pp = new_pp_pkm * ef.pp;
-                co2_total = co2_bike + co2_car + co2_pp;
+                co2_total_t = new_bike_pkm*ef.bike + new_car_pkm*ef.car + new_pp_pkm*ef.pp;
+                co2_time(t) = 100 * (1 - (co2_total_t / co2_base)); % in percent
+        end
 
-                % --- Update outputs ---
-                app.CO2Label.Text = sprintf('Total CO2 (t): %.2f', co2_total);
-                app.ShareBikeLabel.Text = sprintf('Bike share: %.2f %%', share_bike*100);
+                % Final CO₂ emissions and labels
+                co2_final = co2_time(end);
+                app.EinwohnendedieFahrradfahrenLabel.Text = sprintf('Einwohnende, \ndie Fahrrad fahren: %.2f %%', share_bike*100);
+                app.CO2ReduktionimVergleichzumJahr2023Label.Text = sprintf(['CO2 Reduktion im Vergleich\n zum Jahr 2023: %.1f %%'], co2_final);
+
+                % --- Plot bike behavior over time ---
+                plot(app.UIAxes, 1:T, sum(x)/n, 'b', 'LineWidth', 2);
+                title(app.UIAxes, 'Fahrradnutzung über Zeit');
+                xlabel(app.UIAxes, 'Zeit');
+                ylabel(app.UIAxes, 'Anteil Fahrradfahrer');
+                grid(app.UIAxes, 'on');
+
+                % --- Plot CO₂ emissions over time (% baseline) ---
+                plot(app.UIAxes2, 1:T, co2_time, 'g', 'LineWidth', 2);
+                title(app.UIAxes2, 'CO₂-Emissionen Reduktion (% im Vergleich zu 2023)');
+                xlabel(app.UIAxes2, 'Zeit');
+                ylabel(app.UIAxes2, 'CO₂ [%]');
+                grid(app.UIAxes2, 'on');
 
             catch ME
                 uialert(app.UIFigure, ME.message, 'Simulation Error');
@@ -124,4 +143,5 @@ classdef ABMTransportWebApp < handle
         end
     end
 end
+
 
