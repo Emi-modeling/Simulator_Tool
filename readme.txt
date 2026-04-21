@@ -21,7 +21,7 @@ For more information about the MATLAB Runtime and the MATLAB Runtime installer, 
 in the MathWorks Documentation Center.
 
 
-Folder MATLAB Code
+Folder MATLAB-Code
 
 In the folder MATLAB Code you can find all the files I need to run the MATLAB App in Matlab itself on your computer. 
 
@@ -33,23 +33,39 @@ Calibration_Social_Inaction = A Matlab file containing the data preparation I ne
 Rmvnrnd = A Matlab file containing a function of the agent-based model I need for my App.
 
 
-Folder StandaloneApp
+Folder StandaloneApplication
 
+This folder contains all the files necessary to run the App as a standalone application on a local computer.
+
+When you manually export the code from Matlab the Code will be orgnaized as follows:
 Release = This folder contains all the necessary files to run the App as a standalone application.
 Folder Web Application
 Release folder contains:
 C:\... WebApp_Lenze\Standalone_Application\release\package
-Here you can find the App Installer that you need to run if you would like to install the App on your Laptop.
-C:\... WebApp_Lenze\Standalone_Application\release\build
-And here you find the actual Transport_App_Prototyp that you need to open after you install the App Installer to actually run the App.
+Here you can find the MyAppInstaller that you need to run if you would like to install the App on your Laptop. Igonore the other file that named after arbitrary letters. You need to do nothing with it.
 
-This is the more important folder which contains the necessary files for an App which would run through a web application. 
-MATLABWebAppServer = The MATLAB application website through which my App runs.
-Readme = An own documentation from MATLAB about the App deployment.
-Splash = MATLAB Logo
-Transport_App.mltbx = Toolbox for my App
-In the file build you can find Transport_App_Kusel.ctf = The actual file containing the code of my App.
-In addition, the Transport_App_Prototyp.ctf file is also stored at my computer under C:\ProgramData\MathWorks\webapps\R2025b\apps. This is necessary to access the App through the MATLAB Web App Server in the end. I assume that it would need to be stored at a similar place from your hosting computer. 
+C:\... WebApp_Lenze\Standalone_Application\release\build
+And here you find the actual App_Climate_Policy that you need to open after you install the App Installer to actually run the App.
+You further find 
+- buildresult
+- includedSupportPackages
+- mccExcludedFiles
+- readme
+- requiredMCRProducts
+- splash
+- unresolvedSymbols
+Igonore these other files. You need to do nothing with them.
+
+Folder WebApplication
+
+Also the code for the WebApplication can be found in the release folder which contains the necessary files for an App which would run through a web application. 
+
+C:\... WebApp_Lenze\Standalone_Application\release\build
+
+In the file build you can find App_Climate_Policy.ctf = The actual file containing the code of my App.
+All other files can be ignored.
+
+In addition, the App_Climate_Policy.ctf file is also stored at your computer under C:\ProgramData\MathWorks\webapps\R2025b\apps such as C:\Program Files\MATLAB\MATLABWebAppServer\R2025b\application. This is necessary to access the App through the MATLAB Web App Server in the end. It should be stored at a similar place from your hosting computer. 
 
 
 
